@@ -127,13 +127,17 @@ public class BreakDeterminer implements Serializable {
 					tiedTeamsToBreak);
 		} else {
 			// not enough. we need to run this again recursively
-			for (Node n : graph.getStrongNodes()) {
+
+			// it's important that we remove island nodes first. if we remove
+			// strong nodes first, then potentially that would create more
+			// island nodes
+			for (Node n : graph.getIslandNodes()) {
 				tiedTeamsToBreak.add((Team) n.getData());
 				graph.removeNode(n);
 				numToPick--;
 			}
 
-			for (Node n : graph.getIslandNodes()) {
+			for (Node n : graph.getStrongNodes()) {
 				tiedTeamsToBreak.add((Team) n.getData());
 				graph.removeNode(n);
 				numToPick--;
