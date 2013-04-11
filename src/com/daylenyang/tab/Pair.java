@@ -5,9 +5,6 @@ import java.util.ArrayList;
 
 public class Pair implements Serializable {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 525726494393123361L;
 	private Team affTeam;
 	private Team negTeam;
@@ -61,7 +58,8 @@ public class Pair implements Serializable {
 
 	@Override
 	public String toString() {
-		return affTeam + " (AFF) vs. " + negTeam + " (NEG)";
+		return affTeam + " (" + affBallots + ")" + " (AFF) vs. " + negTeam + " ("
+				+ negBallots + ")" + " (NEG)";
 	}
 
 }

@@ -133,6 +133,7 @@ public class DataImport implements Serializable {
 					int negTeamBallots = Integer.parseInt(csv[2]);
 
 					p.setBallots(affTeamBallots, negTeamBallots);
+					System.out.println(p);
 
 				}
 			}
