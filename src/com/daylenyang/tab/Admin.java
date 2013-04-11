@@ -15,7 +15,7 @@ import java.util.List;
 public class Admin implements Serializable {
 
 	private static final long serialVersionUID = 5378416302299271295L;
-	static final int internalVersionNumber = 3;
+	static final int internalVersionNumber = 4;
 	static String updateURL = "http://daylenyang.com/tab/ver.txt";
 
 	static Tournament myTournament;
