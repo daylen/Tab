@@ -43,6 +43,10 @@ public abstract class RoundGen implements Serializable {
 		public int compareTo(TeamPlusWeight arg0) {
 			return this.weight - arg0.weight;
 		}
+		
+		public String toString() {
+			return team + " (" + weight + ")";
+		}
 	}
 
 	protected static final int ITERATION_COUNT = 1000;

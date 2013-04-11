@@ -50,6 +50,8 @@ public class BreakDeterminer implements Serializable {
 		addEdgesToGraph();
 
 		selectTeamsViaHeadToHead(graph, numToPick, tiedTeamsToBreak);
+		System.out.println("Tied teams to break:\n" + tiedTeamsToBreak + "\n");
+
 	}
 
 	private void addTeamsToGraph() {
@@ -60,6 +62,9 @@ public class BreakDeterminer implements Serializable {
 	}
 
 	private void addEdgesToGraph() {
+
+		System.out.println("Head to head:");
+
 		for (Team t : tiedTeams) {
 			// Find the team in the graph
 			Node n = graph.getNodeForData(t);
@@ -69,10 +74,12 @@ public class BreakDeterminer implements Serializable {
 			else
 				teamsThisTeamBeat.clear();
 			for (Team beatenTeam : teamsThisTeamBeat) {
+				System.out.println("* " + t + " def. " + beatenTeam);
 				Node beatenNode = graph.getNodeForData(beatenTeam);
 				graph.addEdge(n, beatenNode);
 			}
 		}
+		System.out.println();
 	}
 
 	private void buildMapOfBeatTeamsForEachTeam() {
@@ -165,6 +172,10 @@ public class BreakDeterminer implements Serializable {
 
 		Collections.sort(teamsToConsider);
 		Collections.reverse(teamsToConsider);
+		
+		System.out.println("Comparing speaker points for these teams: ");
+		System.out.println(teamsToConsider);
+		System.out.println();
 
 		for (int i = 0; i < numToPick; i++) {
 			tiedTeamsToBreak.add(teamsToConsider.get(i).t);
@@ -213,7 +224,7 @@ public class BreakDeterminer implements Serializable {
 
 		@Override
 		public String toString() {
-			return t.toString() + "=" + points;
+			return t.toString() + " (" + points + " pts)";
 		}
 
 	}

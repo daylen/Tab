@@ -28,7 +28,7 @@ public class ElimRoundGen extends RoundGen {
 			int numTeamsToBreak = (int) Math.pow(2,
 					tournament.getNumEliminationRounds());
 			advancingTeams.addAll(getTopTeams(numTeamsToBreak));
-			System.out.println("Teams to advance: " + advancingTeams);
+			System.out.println("Teams to advance:\n" + advancingTeams + "\n");
 		} else {
 			// This is not the first elim round, just drop teams
 			List<Team> winners = new ArrayList<Team>();
@@ -50,7 +50,7 @@ public class ElimRoundGen extends RoundGen {
 
 	private List<Team> getTopTeams(int numTeams) {
 
-		System.out.println("Determining breaks...");
+		System.out.println("\nDetermining breaks...\n");
 		System.out.println("Selecting " + numTeams
 				+ " top teams out of the following:");
 
@@ -73,8 +73,10 @@ public class ElimRoundGen extends RoundGen {
 		ArrayList<Team> teams = new ArrayList<Team>();
 		for (TeamPlusWeight tpw : teamsSortedByBallotCount) {
 			teams.add(tpw.team);
-			System.out.println("* " + tpw.team + " (" + tpw.weight + ")");
 		}
+
+		System.out.println(teamsSortedByBallotCount);
+		System.out.println();
 
 		// Determine if we need to break a tie
 
@@ -82,8 +84,7 @@ public class ElimRoundGen extends RoundGen {
 
 		int tiedScore = tournament.getBallotsForTeam(teams.get(numTeams - 1));
 		if (tiedScore == tournament.getBallotsForTeam(teams.get(numTeams))) {
-			// Need to break a tie
-			System.out.println("Breaking tie(s)...");
+			System.out.println("Tie breaking required.\n");
 
 			System.out.println("Teams guaranteed to break: ");
 
@@ -91,26 +92,30 @@ public class ElimRoundGen extends RoundGen {
 			for (TeamPlusWeight tpw : teamsSortedByBallotCount) {
 				if (tpw.weight > tiedScore) {
 					teamsThatWillBreak.add(tpw.team);
-					System.out.println("* " + tpw.team + " (" + tpw.weight
-							+ ")");
 				} else
 					break;
 			}
+			
+			System.out.println(teamsThatWillBreak);
+			System.out.println();
 
 			int remainingTeamsToSelect = numTeams - teamsThatWillBreak.size();
-			System.out.println("Selecting " + remainingTeamsToSelect
-					+ " teams out of the following tied teams:");
+			
 			// Get all the teams with the same ballot count
 			ArrayList<Team> tiedTeams = new ArrayList<Team>();
 
 			for (TeamPlusWeight team : teamsSortedByBallotCount) {
 				if (tiedScore == team.weight) {
 					tiedTeams.add(team.team);
-					System.out.println("* " + team.team + " (" + team.weight + ")");
 				} else if (tiedScore > team.weight) {
 					break;
 				}
 			}
+			System.out.println("Selecting " + remainingTeamsToSelect
+					+ " teams out of the following teams tied at " + tiedScore
+					+ " ballots:");
+			System.out.println(tiedTeams);
+			System.out.println();
 
 			// call head to head
 
@@ -122,8 +127,7 @@ public class ElimRoundGen extends RoundGen {
 			return teamsThatWillBreak;
 
 		} else {
-			// no need to break tie
-			System.out.println("No tie breaking was needed.");
+			System.out.println("No tie breaking required.");
 			return teams.subList(0, numTeams);
 		}
 
