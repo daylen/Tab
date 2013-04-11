@@ -13,7 +13,7 @@ public class NullTeam extends Team {
 	}
 
 	private NullTeam() {
-		super(null, null, null);
+		super(null, null, null, 0);
 	}
 
 	@Override
