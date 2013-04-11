@@ -17,7 +17,10 @@ public class Tournament implements Serializable {
 	private String name;
 
 	private int numEliminationRounds;
+	
+	private TournamentState tournamentState;
 
+	private PairingRule firstRoundPairingRule; // power protect
 	private PairingRule preliminaryRoundPairingRule; // power match
 	private PairingRule eliminationRoundPairingRule; // power protect
 
@@ -100,8 +103,10 @@ public class Tournament implements Serializable {
 			if (s.toString().equals(studentName)) {
 				// This is the student
 				enterSpeakerPointsForStudent(s, points, roundIndex);
+				return;
 			}
 		}
+		throw new RuntimeException("Speaker point file contains a student not found in teams file");
 	}
 
 	public void enterSpeakerPointsForStudent(Student s, double points,
@@ -148,10 +153,10 @@ public class Tournament implements Serializable {
 	 * @param team
 	 * @return
 	 */
-	public int getBallotsForTeam(Team team, List<Round> rounds) {
+	public int getBallotsForTeam(Team team) {
 		int numBallots = 0;
 
-		for (Round r : rounds) {
+		for (Round r : preliminaryRounds) {
 			for (Pair p : r.getPairs()) {
 				if (p.getAffTeam().equals(team))
 					numBallots += p.getAffBallots();
@@ -291,6 +296,22 @@ public class Tournament implements Serializable {
 				return false;
 		}
 		return true;
+	}
+
+	public PairingRule getFirstRoundPairingRule() {
+		return firstRoundPairingRule;
+	}
+
+	public void setFirstRoundPairingRule(PairingRule firstRoundPairingRule) {
+		this.firstRoundPairingRule = firstRoundPairingRule;
+	}
+
+	public TournamentState getTournamentState() {
+		return tournamentState;
+	}
+
+	public void setTournamentState(TournamentState tournamentState) {
+		this.tournamentState = tournamentState;
 	}
 
 }
