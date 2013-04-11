@@ -486,15 +486,11 @@ public class Admin implements Serializable {
 		System.out.println("Then press enter to begin import.");
 		System.out.print("> ");
 		console.readLine();
-
-		System.out.println("Here are the results of the import:");
 		
 		// Do the actual importing
 		DataImport.parsePrelimRoundResults(fileName, myTournament
 				.getPreliminaryRounds().get(roundIndex));
 		DataImport.parseSpeakerPoints(sFileName, myTournament, roundIndex);
-
-		// TODO print speaker points
 
 		boolean proceed = true;
 		for (int i = 0; i < myTournament.getPreliminaryRounds().size(); i++) {

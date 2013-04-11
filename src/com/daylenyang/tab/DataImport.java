@@ -122,6 +122,7 @@ public class DataImport implements Serializable {
 		Scanner fScan = new Scanner(new File(fileName), "UTF-8");
 		fScan.useDelimiter(delimiter);
 
+		System.out.println("Importing round results...");
 		while (fScan.hasNextLine()) {
 			String[] csv = splitAndSanitizeLine(fScan.nextLine());
 
@@ -147,13 +148,16 @@ public class DataImport implements Serializable {
 		Scanner fScan = new Scanner(new File(fileName), "UTF-8");
 		fScan.useDelimiter(delimiter);
 		
+		System.out.println("Importing speaker points...");
 		while (fScan.hasNextLine()) {
 			String[] csv = splitAndSanitizeLine(fScan.nextLine());
 			int cellToLookAt = roundIndex + 1;
 			double points = Double.parseDouble(csv[cellToLookAt]);
-
+			
 			t.enterSpeakerPointsForStudent(csv[0], points, roundIndex);
+			System.out.print("[" + csv[0] + " " + points + "] ");
 		}
+		System.out.println();
 		
 		fScan.close();
 		
