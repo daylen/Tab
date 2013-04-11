@@ -256,14 +256,14 @@ public class Admin implements Serializable {
 				switch (j) {
 				case 0:
 					sb.append(p.getAffTeam());
-					sb.append(" (Ballots=");
+					sb.append(" (");
 					sb.append(myTournament.getBallotsForTeam(p.getAffTeam()));
 					sb.append(")");
 					table[i][j] = sb.toString();
 					break;
 				case 1:
 					sb.append(p.getNegTeam());
-					sb.append(" (Ballots=");
+					sb.append(" (");
 					sb.append(myTournament.getBallotsForTeam(p.getNegTeam()));
 					sb.append(")");
 					table[i][j] = sb.toString();
