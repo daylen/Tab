@@ -7,17 +7,17 @@ import java.io.Serializable;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 public class Admin implements Serializable {
 
-	// TODO implement action to display arbitrary round and speaker points
-
 	private static final long serialVersionUID = 5378416302299271295L;
-	static final int internalVersionNumber = 1;
+	static final int internalVersionNumber = 3;
 	static String updateURL = "http://daylenyang.com/tab/ver.txt";
-	static TournamentState tState;
+
 	static Tournament myTournament;
 	static BufferedReader console;
 
@@ -28,22 +28,44 @@ public class Admin implements Serializable {
 		return fileName + ".tournament";
 	}
 
-	private static void getTopSpeaker() {
-		if (tState != TournamentState.ELIM)
-			return;
-
-		double bestScore = 0;
-		Student bestSpeaker = null;
+	private static void printTopSpeakers() {
+		List<StudentPlusSpeakerPoints> students = new ArrayList<StudentPlusSpeakerPoints>();
 		for (Student s : myTournament.getSpeakerPoints().keySet()) {
-			double thisPersonsScore = getTotalForList(myTournament
-					.getSpeakerPoints().get(s));
-			if (thisPersonsScore > bestScore) {
-				bestScore = thisPersonsScore;
-				bestSpeaker = s;
-			}
+			students.add(new StudentPlusSpeakerPoints(s,
+					getTotalForList(myTournament.getSpeakerPoints().get(s))));
 		}
-		System.out.println("The top speaker is " + bestSpeaker.toString()
-				+ " with " + bestScore + " points.");
+		Collections.sort(students);
+		Collections.reverse(students);
+		System.out.println(students);
+	}
+
+	private static class StudentPlusSpeakerPoints implements
+			Comparable<StudentPlusSpeakerPoints> {
+
+		Student s;
+		double points;
+
+		public StudentPlusSpeakerPoints(Student s, double points) {
+			this.s = s;
+			this.points = points;
+		}
+
+		@Override
+		public int compareTo(StudentPlusSpeakerPoints arg0) {
+			// TODO Auto-generated method stub
+			if (points > arg0.points)
+				return 1;
+			else if (points < arg0.points)
+				return -1;
+			else
+				return 0;
+			// return (int) (points - arg0.points);
+		}
+
+		public String toString() {
+			return s + " " + points;
+
+		}
 
 	}
 
@@ -55,49 +77,63 @@ public class Admin implements Serializable {
 		return total;
 	}
 
-	private static boolean isTransitionAllowed(char cmd) {
-		switch (cmd) {
-		case 'n':
-			return (tState == TournamentState.TOURNAMENT_NOT_LOADED);
-		case 'o':
-			return (tState == TournamentState.TOURNAMENT_NOT_LOADED);
-		case 'i':
-			return (tState == TournamentState.PRELIM);
-		case 'p':
-			return (tState == TournamentState.TOURNAMENT_LOADED || tState == TournamentState.PRELIM);
-		case 'e':
-			return (tState == TournamentState.PRELIM || tState == TournamentState.ELIM);
-		case 't':
-			return (tState == TournamentState.ELIM);
-		case 'q':
-			return true;
-		default:
-			return false;
+	private static boolean isTransitionAllowed(char c) {
+
+		if (myTournament == null) {
+			switch (c) {
+			case 'n':
+			case 'o':
+			case 'q':
+				return true;
+			default:
+				return false;
+			}
+		} else {
+
+			switch (c) {
+			case 't':
+				return (myTournament.getTournamentState() == TournamentState.PRELIM
+						|| myTournament.getTournamentState() == TournamentState.ELIM || myTournament
+							.getTournamentState() == TournamentState.ALL_DONE);
+			case 'i':
+				return (myTournament.getTournamentState() == TournamentState.PRELIM || myTournament
+						.getTournamentState() == TournamentState.IMPORT_REQUIRED);
+			case 'p':
+				return (myTournament.getTournamentState() == TournamentState.TOURNAMENT_LOADED || myTournament
+						.getTournamentState() == TournamentState.PRELIM);
+			case 'e':
+				return (myTournament.getTournamentState() != TournamentState.ALL_DONE && (myTournament
+						.getTournamentState() == TournamentState.PRELIM || myTournament
+						.getTournamentState() == TournamentState.ELIM));
+			case 'q':
+				return true;
+			default:
+				return false;
+			}
 		}
 	}
 
 	public static void main(String[] args) throws IOException,
 			ClassNotFoundException {
-		// Initialize tournament state
-		tState = TournamentState.TOURNAMENT_NOT_LOADED;
 
-		// Print app name, version, copyright, and expiration date
+		// Print app information and check for update
 		printHello();
 		checkForUpdate();
 
-		// Some more important stuff
+		// Reader
 		console = new BufferedReader(new InputStreamReader(System.in));
-		char[] commands = { 'n', 'o', 'i', 'p', 'e', 't', 'q' };
-		String[] commandExplains = { "ew", "pen", "mport", "relim", "lim",
-				"op speaker", "uit" };
+
+		// Some more important stuff
+		String[] commands = { "new tournament", "open tournament",
+				"top speakers", "import data", "prelim", "elim", "quit" };
 
 		while (true) {
 			// Display available actions
 			System.out.print("Available actions: ");
 			for (int i = 0; i < commands.length; i++) {
-				if (isTransitionAllowed(commands[i]))
-					System.out.print("[" + commands[i] + "]"
-							+ commandExplains[i] + "  ");
+				if (isTransitionAllowed(commands[i].charAt(0)))
+					System.out.print("[" + commands[i].charAt(0) + "]"
+							+ commands[i].substring(1) + "  ");
 			}
 
 			// Get input from user
@@ -124,6 +160,9 @@ public class Admin implements Serializable {
 			case 'o':
 				openTournament();
 				break;
+			case 't':
+				printTopSpeakers();
+				break;
 			case 'i':
 				importDataForPrelimRound();
 				break;
@@ -132,9 +171,6 @@ public class Admin implements Serializable {
 				break;
 			case 'e':
 				runElimRound();
-				break;
-			case 't':
-				getTopSpeaker();
 				break;
 			case 'q':
 				quit();
@@ -175,6 +211,7 @@ public class Admin implements Serializable {
 		System.out.println();
 
 		myTournament.setPreliminaryRoundNumJudges(2);
+		myTournament.setFirstRoundPairingRule(PairingRule.POWER_PROTECT);
 		myTournament.setPreliminaryRoundPairingRule(PairingRule.POWER_MATCH);
 		myTournament.setEliminationRoundPairingRule(PairingRule.POWER_PROTECT);
 
@@ -184,7 +221,7 @@ public class Admin implements Serializable {
 			System.exit(0);
 		}
 
-		tState = TournamentState.TOURNAMENT_LOADED;
+		myTournament.setTournamentState(TournamentState.TOURNAMENT_LOADED);
 
 	}
 
@@ -202,18 +239,9 @@ public class Admin implements Serializable {
 		System.out.println("Number of prelim rounds so far: " + numPrelim);
 		System.out.println("Number of elim rounds so far: " + numElim);
 
-		// Determine and set tState
-		if (numPrelim == 0)
-			tState = TournamentState.TOURNAMENT_LOADED;
-		else if (numPrelim != 0 && numElim == 0)
-			tState = TournamentState.PRELIM;
-		else
-			tState = TournamentState.ELIM;
-
 	}
 
-	private static void prettyPrintARound(Round r, List<Round> rounds,
-			boolean printBallotCounts) {
+	private static void prettyPrintARound(Round r) {
 		String[][] table = new String[r.getPairs().size() + 1][4];
 		table[0][0] = "AFF";
 		table[0][1] = "NEG";
@@ -223,26 +251,32 @@ public class Admin implements Serializable {
 		for (int i = 1; i < table.length; i++) {
 			for (int j = 0; j < table[0].length; j++) {
 				Pair p = r.getPairs().get(i - 1);
-				if (j == 0)
-					if (printBallotCounts)
-						table[i][j] = p.getAffTeam().toString()
-								+ "="
-								+ myTournament.getBallotsForTeam(
-										p.getAffTeam(), rounds);
-					else
-						table[i][j] = p.getAffTeam().toString();
-				if (j == 1)
-					if (printBallotCounts)
-						table[i][j] = p.getNegTeam().toString()
-								+ "="
-								+ myTournament.getBallotsForTeam(
-										p.getNegTeam(), rounds);
-					else
-						table[i][j] = p.getNegTeam().toString();
-				if (j == 2)
+
+				StringBuilder sb = new StringBuilder();
+				switch (j) {
+				case 0:
+					sb.append(p.getAffTeam());
+					sb.append(" (Ballots=");
+					sb.append(myTournament.getBallotsForTeam(p.getAffTeam()));
+					sb.append(")");
+					table[i][j] = sb.toString();
+					break;
+				case 1:
+					sb.append(p.getNegTeam());
+					sb.append(" (Ballots=");
+					sb.append(myTournament.getBallotsForTeam(p.getNegTeam()));
+					sb.append(")");
+					table[i][j] = sb.toString();
+					break;
+				case 2:
 					table[i][j] = p.getJudges().toString();
-				if (j == 3)
+					break;
+				case 3:
 					table[i][j] = p.getRoom().toString();
+					break;
+				default:
+				}
+
 			}
 		}
 
@@ -326,22 +360,17 @@ public class Admin implements Serializable {
 	private static void runElimRound() throws NumberFormatException,
 			IOException {
 
-		if (!myTournament.validatePrelimRound(myTournament
-				.getPreliminaryRounds().size() - 1)) {
-			System.out
-					.println("You cannot generate an elim round because you need to import data for the previous prelim round first.");
-			return;
-		}
-
-		tState = TournamentState.ELIM;
+		myTournament.setTournamentState(TournamentState.ELIM);
 
 		if (myTournament.getNumEliminationRounds() == 0) {
-			System.out.println("How many elim rounds will there be?");
-			System.out.print("1=Break to finals  2=Break to semis  "
-					+ "3=Break to quarters  4=Break to octos\n> ");
-			myTournament.setNumEliminationRounds(Integer.parseInt(console
-					.readLine()));
+			while (true) {
+				System.out.println("How many elim rounds will there be?");
+				System.out.println("1=Break to finals  2=Break to semis  "
+						+ "3=Break to quarters  4=Break to octos");
 
+				myTournament.setNumEliminationRounds(getIntegerFromUser());
+				break;
+			}
 		}
 
 		// Generate a round
@@ -349,18 +378,18 @@ public class Admin implements Serializable {
 				myTournament.getEliminationRounds());
 		int roundIndex = myTournament.getEliminationRounds().size();
 
-		System.out
-				.print("For this round, how many judges will there be per pair?\n> ");
-		rg.setCurrentNumJudges(Integer.parseInt(console.readLine()));
+		while (true) {
+			System.out
+					.println("For this round, how many judges will there be per pair?");
+
+			rg.setCurrentNumJudges(getIntegerFromUser());
+			break;
+		}
 
 		rg.generateManyRoundsAndPickBestOne(myTournament.getAdvancingTeams());
 
 		System.out.println("ELIM ROUND " + (roundIndex + 1));
-		prettyPrintARound(myTournament.getEliminationRounds().get(roundIndex),
-				myTournament.getEliminationRounds(), false);
-
-		// Save the round
-		saveTournament();
+		prettyPrintARound(myTournament.getEliminationRounds().get(roundIndex));
 
 		// Import data
 		System.out.println("Result import for elim round " + (roundIndex + 1));
@@ -381,21 +410,18 @@ public class Admin implements Serializable {
 			}
 		}
 
+		// Is the tournament over?
+		if (roundIndex + 1 == myTournament.getNumEliminationRounds()) {
+			System.out.println("The tournament is over.");
+			myTournament.setTournamentState(TournamentState.ALL_DONE);
+		}
+
 		// Save the round
 		saveTournament();
 	}
 
 	private static void runPrelimRound() throws IOException {
-
-		if (myTournament.getPreliminaryRounds().size() > 0
-				&& !myTournament.validatePrelimRound(myTournament
-						.getPreliminaryRounds().size() - 1)) {
-			System.out
-					.println("You cannot generate a new prelim round because you need to import data for the previous prelim round first.");
-			return;
-		}
-
-		tState = TournamentState.PRELIM;
+		myTournament.setTournamentState(TournamentState.PRELIM);
 
 		// Generate a round
 
@@ -406,20 +432,53 @@ public class Admin implements Serializable {
 		rg.generateManyRoundsAndPickBestOne(myTournament.getTeams());
 
 		System.out.println("ROUND " + (roundIndex + 1));
-		prettyPrintARound(myTournament.getPreliminaryRounds().get(roundIndex),
-				myTournament.getPreliminaryRounds(), false);
+		prettyPrintARound(myTournament.getPreliminaryRounds().get(roundIndex));
+
+		myTournament.setTournamentState(TournamentState.IMPORT_REQUIRED);
 
 		// Save the round
 		saveTournament();
 	}
 
+	private static int getIntegerFromUser() throws IOException {
+		int number;
+		while (true) {
+			System.out.print("> ");
+			String input = console.readLine();
+			if (input.length() == 0)
+				continue;
+
+			try {
+				number = Integer.parseInt(input);
+				break;
+			} catch (NumberFormatException e) {
+				System.out.println("Not a number. Try again.");
+				continue;
+			}
+		}
+		return number;
+	}
+
 	private static void importDataForPrelimRound() throws IOException {
 
-		System.out
-				.print("For what prelim round do you want to import data?\n> ");
-		int roundIndex = Integer.parseInt(console.readLine()) - 1;
+		// the first round will be zero
+		int roundIndex;
 
-		System.out.println("Result import for round " + (roundIndex + 1));
+		while (true) {
+			System.out.println("Import data for which prelim round?");
+
+			roundIndex = getIntegerFromUser() - 1;
+
+			// Verify the round index
+			if (roundIndex < 0)
+				System.out.println("Too small, try again.");
+			else if (roundIndex >= myTournament.getPreliminaryRounds().size())
+				System.out.println("Too big, try again.");
+			else
+				break;
+		}
+
+		System.out.println("Import data for round " + (roundIndex + 1));
 		String fileName = "prelim" + (roundIndex + 1) + ".csv";
 		String sFileName = "speakers.csv";
 		System.out.printf("Ensure that %s and %s contain the correct info.\n",
@@ -428,15 +487,34 @@ public class Admin implements Serializable {
 		System.out.print("> ");
 		console.readLine();
 
+		// Do the actual importing
 		DataImport.parsePrelimRoundResults(fileName, myTournament
 				.getPreliminaryRounds().get(roundIndex));
 		DataImport.parseSpeakerPoints(sFileName, myTournament, roundIndex);
+
+		System.out.println("Here are the results of the import:");
+
+		// TODO
+
+		boolean proceed = true;
+		for (int i = 0; i < myTournament.getPreliminaryRounds().size(); i++) {
+			if (!myTournament.validatePrelimRound(i)) {
+				System.out.println("WARNING: Round " + (i + 1)
+						+ " is not valid");
+				proceed = false;
+			}
+		}
+
+		if (proceed)
+			myTournament.setTournamentState(TournamentState.PRELIM);
+		else
+			System.out
+					.println("There are still rounds that do not have correct data.");
+
 		saveTournament();
 	}
 
 	private static void saveTournament() throws IOException {
-		if (tState == TournamentState.TOURNAMENT_NOT_LOADED)
-			return;
 		String safeTournamentName = myTournament.getName().trim().toLowerCase()
 				.replaceAll("[^\\w]", "");
 		Date d = new Date();
