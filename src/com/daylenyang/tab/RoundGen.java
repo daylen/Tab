@@ -66,7 +66,6 @@ public abstract class RoundGen implements Serializable {
 		this.currentNumJudges = tournament.getPreliminaryRoundNumJudges();
 		this.rounds = rounds;
 
-		// randomness is 1x
 		// pairing rule penalty is 10x
 		teamsAreFromSameSchoolPenalty = 100 * tournament.getTeams().size();
 		teamsHavePreviouslyDebatedPenalty = 1000 * tournament.getTeams().size();
@@ -75,6 +74,8 @@ public abstract class RoundGen implements Serializable {
 		judgeHasPreviouslyJudgedPenalty = 100 * tournament.getTeams().size();
 		judgeIsFromSameSchoolPenalty = 1000 * tournament.getTeams().size();
 	}
+	
+	
 
 	/**
 	 * Given a round filled with pairs, this method assigns judges and rooms to
@@ -159,7 +160,7 @@ public abstract class RoundGen implements Serializable {
 		ArrayList<TeamPlusWeight> candidateWeights = new ArrayList<TeamPlusWeight>();
 
 		for (Team candidateTeam : candidateTeams) {
-			int weight = computeQualityIndexForPair(myTeam, candidateTeam, true);
+			int weight = computeQualityIndexForPair(myTeam, candidateTeam);
 
 			candidateWeights.add(new TeamPlusWeight(candidateTeam, weight));
 
@@ -211,13 +212,11 @@ public abstract class RoundGen implements Serializable {
 	 *            Whether to introduce some randomness.
 	 * @return The quality index number.
 	 */
-	protected int computeQualityIndexForPair(Team myTeam, Team candidateTeam,
-			boolean useRandom) {
+	protected int computeQualityIndexForPair(Team myTeam, Team candidateTeam) {
 		List<Team> previousOpponents = tournament
 				.getPreviousOpponentsForTeam(myTeam, rounds);
 
-		int weight = (useRandom ? random.nextInt(tournament.getTeams().size())
-				: 0);
+		int weight = 0;
 
 		// Check whether this is a previous opponent
 		if (previousOpponents.contains(candidateTeam))
@@ -227,23 +226,38 @@ public abstract class RoundGen implements Serializable {
 			weight += teamsAreFromSameSchoolPenalty;
 
 		// Apply pairing rule
-		// IMPORTANT: This is always based on prelim rounds.
+		
+		if (tournament.getPreliminaryRounds().size() == 0) {
+			int myRank = myTeam.getRanking();
+			int theirRank = candidateTeam.getRanking();
+			
+			int pairingRulePenalty = Math.abs(myRank - theirRank);
+			
+			switch (tournament.getFirstRoundPairingRule()) {
+			case POWER_MATCH:
+				weight += pairingRulePenalty;
+				break;
+			case POWER_PROTECT:
+				weight -= pairingRulePenalty;
+				break;
+			default:
+			}
+			
+		} else {
+			int myBallots = tournament.getBallotsForTeam(myTeam);
+			int theirBallots = tournament.getBallotsForTeam(candidateTeam);
 
-		int myBallots = tournament.getBallotsForTeam(myTeam, tournament.getPreliminaryRounds());
-		int theirBallots = tournament.getBallotsForTeam(candidateTeam, tournament.getPreliminaryRounds());
+			int pairingRulePenalty = Math.abs(myBallots - theirBallots);
 
-		int pairingRulePenalty = Math.abs(myBallots - theirBallots) * 10
-				* tournament.getTeams().size()
-				/ (rounds.size() + 1);
-
-		switch (currentPairingRule) {
-		case POWER_MATCH:
-			weight += pairingRulePenalty;
-			break;
-		case POWER_PROTECT:
-			weight -= pairingRulePenalty;
-			break;
-		default:
+			switch (currentPairingRule) {
+			case POWER_MATCH:
+				weight += pairingRulePenalty;
+				break;
+			case POWER_PROTECT:
+				weight -= pairingRulePenalty;
+				break;
+			default:
+			}
 		}
 
 		return weight;
@@ -261,7 +275,7 @@ public abstract class RoundGen implements Serializable {
 
 		for (Pair p : r.getPairs()) {
 			qualityIndex += computeQualityIndexForPair(p.getAffTeam(),
-					p.getNegTeam(), false);
+					p.getNegTeam());
 			for (Judge j : p.getJudges()) {
 				qualityIndex += computeQualityIndexForJudge(j, p, false);
 			}
