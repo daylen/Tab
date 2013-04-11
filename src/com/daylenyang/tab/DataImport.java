@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,12 +49,15 @@ public class DataImport implements Serializable {
 			Student s2 = new Student(csv[2]);
 			speakerPoints.put(s1, new ArrayList<Double>());
 			speakerPoints.put(s2, new ArrayList<Double>());
+			int ranking = (int) Double.parseDouble(csv[3]);
 
-			Team t = new Team(school, s1, s2);
+			Team t = new Team(school, s1, s2, ranking);
 
 			teams.add(t);
 
 		}
+		
+		fScan.close();
 
 	}
 
@@ -86,6 +88,8 @@ public class DataImport implements Serializable {
 				judges.add(j);
 			}
 		}
+		
+		fScan.close();
 
 		return judges;
 
@@ -100,7 +104,7 @@ public class DataImport implements Serializable {
 		while (fScan.hasNextLine()) {
 			rooms.add(new Room(fScan.nextLine()));
 		}
-
+		fScan.close();
 		return rooms;
 	}
 
@@ -120,7 +124,6 @@ public class DataImport implements Serializable {
 
 		while (fScan.hasNextLine()) {
 			String[] csv = splitAndSanitizeLine(fScan.nextLine());
-			System.out.println("Imported: " + Arrays.toString(csv));
 
 			for (Pair p : r.getPairs()) {
 				if (csv[0].equals(p.getRoom().toString())) {
@@ -135,21 +138,30 @@ public class DataImport implements Serializable {
 			}
 
 		}
+		fScan.close();
 	}
 
 	public static void parseSpeakerPoints(String fileName, Tournament t,
 			int roundIndex) throws FileNotFoundException {
 		Scanner fScan = new Scanner(new File(fileName), "UTF-8");
 		fScan.useDelimiter(delimiter);
-
+		
 		while (fScan.hasNextLine()) {
 			String[] csv = splitAndSanitizeLine(fScan.nextLine());
 			int cellToLookAt = roundIndex + 1;
 			double points = Double.parseDouble(csv[cellToLookAt]);
-			System.out.println("Imported: " + csv[0] + "," + points);
 
 			t.enterSpeakerPointsForStudent(csv[0], points, roundIndex);
 		}
+		
+		fScan.close();
+		
+		// Verify that all students have speaker points set
+		for (Student s : t.getSpeakerPoints().keySet()) {
+			if (t.getSpeakerPoints().get(s).size() < roundIndex + 1)
+				throw new RuntimeException(s + " is missing speaker points");
+		}
+		
 	}
 
 }
