@@ -50,35 +50,38 @@ public class ElimRoundGen extends RoundGen {
 
 	private List<Team> getTopTeams(int numTeams) {
 
+		System.out.println("Determining breaks...");
+
 		// In this case, TeamPlusWeight is a misnomer. Really it's
 		// TeamPlusBallotCount
 		ArrayList<TeamPlusWeight> teamsSortedByBallotCount = new ArrayList<TeamPlusWeight>();
 
 		for (Team team : tournament.getTeams()) {
 
-			teamsSortedByBallotCount
-					.add(new TeamPlusWeight(team, tournament.getBallotsForTeam(
-							team, tournament.getPreliminaryRounds())));
+			teamsSortedByBallotCount.add(new TeamPlusWeight(team, tournament
+					.getBallotsForTeam(team)));
 
 		}
 
 		Collections.sort(teamsSortedByBallotCount);
 		Collections.reverse(teamsSortedByBallotCount);
+		
+		// Print out all the teams and their ballot counts
 
 		ArrayList<Team> teams = new ArrayList<Team>();
 		for (TeamPlusWeight tpw : teamsSortedByBallotCount) {
 			teams.add(tpw.team);
+			System.out.println(tpw.team + " " + tpw.weight);
 		}
 
 		// Determine if we need to break a tie
 
 		ArrayList<Team> teamsThatWillBreak = new ArrayList<Team>();
 
-		int tiedScore = tournament.getBallotsForTeam(teams.get(numTeams - 1),
-				tournament.getPreliminaryRounds());
-		if (tiedScore == tournament.getBallotsForTeam(teams.get(numTeams),
-				tournament.getPreliminaryRounds())) {
+		int tiedScore = tournament.getBallotsForTeam(teams.get(numTeams - 1));
+		if (tiedScore == tournament.getBallotsForTeam(teams.get(numTeams))) {
 			// Need to break a tie
+			System.out.println("Breaking tie(s)...");
 
 			// Find the index of a better score than the tied score
 			for (TeamPlusWeight tpw : teamsSortedByBallotCount) {
@@ -102,6 +105,8 @@ public class ElimRoundGen extends RoundGen {
 			}
 
 			// call head to head
+			
+			System.out.println("The tied teams are: " + tiedTeams);
 
 			BreakDeterminer breakDet = new BreakDeterminer(tiedTeams,
 					remainingTeamsToSelect, tournament.getPreliminaryRounds(),
@@ -112,6 +117,7 @@ public class ElimRoundGen extends RoundGen {
 
 		} else {
 			// no need to break tie
+			System.out.println("No tie breaking was needed.");
 			return teams.subList(0, numTeams);
 		}
 
