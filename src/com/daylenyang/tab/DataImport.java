@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -14,7 +13,7 @@ public class DataImport implements Serializable {
 	
 	private static final long serialVersionUID = -411120953669125050L;
 	static String delimiter = "\r\n|[\n\r\u2028\u2029\u0085]";
-	Map<String, School> schools = new HashMap<String, School>();
+	
 
 	private static String[] splitAndSanitizeLine(String line) {
 		// replace apostrophe
@@ -29,7 +28,7 @@ public class DataImport implements Serializable {
 	}
 
 	public void parseTeams(String fileName, List<Team> teams,
-			Map<Student, List<Double>> speakerPoints)
+			Map<Student, List<Double>> speakerPoints, Map<String, School> schools)
 			throws FileNotFoundException {
 		Scanner fScan = new Scanner(new File(fileName), "UTF-8");
 		fScan.useDelimiter(delimiter);
@@ -61,7 +60,7 @@ public class DataImport implements Serializable {
 
 	}
 
-	public ArrayList<Judge> parseJudges(String fileName)
+	public ArrayList<Judge> parseJudges(String fileName, Map<String, School> schools)
 			throws FileNotFoundException {
 		Scanner fScan = new Scanner(new File(fileName), "UTF-8");
 		fScan.useDelimiter(delimiter);

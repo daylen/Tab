@@ -13,7 +13,7 @@ public class NullJudge extends Judge {
 	}
 
 	private NullJudge() {
-		super(null, null, null);
+		super(null, null);
 	}
 
 	@Override

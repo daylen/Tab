@@ -19,6 +19,8 @@ public class Tournament implements Serializable {
 	private int numEliminationRounds;
 	
 	private TournamentState tournamentState;
+	
+	private Map<String, School> schools = new HashMap<String, School>();
 
 	private PairingRule firstRoundPairingRule; // power protect
 	private PairingRule preliminaryRoundPairingRule; // power match
@@ -62,8 +64,8 @@ public class Tournament implements Serializable {
 		this(name);
 		DataImport importer = new DataImport();
 
-		importer.parseTeams(teamFileName, teams, speakerPoints);
-		judges = importer.parseJudges(judgeFileName);
+		importer.parseTeams(teamFileName, teams, speakerPoints, schools);
+		judges = importer.parseJudges(judgeFileName, schools);
 		rooms = importer.parseRooms(roomFileName);
 	}
 
@@ -312,6 +314,14 @@ public class Tournament implements Serializable {
 
 	public void setTournamentState(TournamentState tournamentState) {
 		this.tournamentState = tournamentState;
+	}
+
+	public Map<String, School> getSchools() {
+		return schools;
+	}
+
+	public void setSchools(Map<String, School> schools) {
+		this.schools = schools;
 	}
 
 }

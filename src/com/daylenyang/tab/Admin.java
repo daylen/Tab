@@ -52,14 +52,12 @@ public class Admin implements Serializable {
 
 		@Override
 		public int compareTo(StudentPlusSpeakerPoints arg0) {
-			// TODO Auto-generated method stub
 			if (points > arg0.points)
 				return 1;
 			else if (points < arg0.points)
 				return -1;
 			else
 				return 0;
-			// return (int) (points - arg0.points);
 		}
 
 		public String toString() {
@@ -98,6 +96,9 @@ public class Admin implements Serializable {
 			case 'i':
 				return (myTournament.getTournamentState() == TournamentState.PRELIM || myTournament
 						.getTournamentState() == TournamentState.IMPORT_REQUIRED);
+			case 'j':
+				return (myTournament.getTournamentState() == TournamentState.PRELIM || myTournament
+						.getTournamentState() == TournamentState.ELIM);
 			case 'p':
 				return (myTournament.getTournamentState() == TournamentState.TOURNAMENT_LOADED || myTournament
 						.getTournamentState() == TournamentState.PRELIM);
@@ -125,7 +126,8 @@ public class Admin implements Serializable {
 
 		// Some more important stuff
 		String[] commands = { "new tournament", "open tournament",
-				"top speakers", "import data", "prelim", "elim", "quit" };
+				"top speakers", "import data", "judges", "prelim", "elim",
+				"quit" };
 
 		while (true) {
 			// Display available actions
@@ -166,6 +168,9 @@ public class Admin implements Serializable {
 			case 'i':
 				importDataForPrelimRound();
 				break;
+			case 'j':
+				editJudges();
+				break;
 			case 'p':
 				runPrelimRound();
 				break;
@@ -179,6 +184,73 @@ public class Admin implements Serializable {
 				System.out.println("Unknown command.");
 			}
 		}
+
+	}
+
+	private static void editJudges() throws IOException {
+		System.out.println("There are currently "
+				+ myTournament.getJudges().size() + " judges.");
+		System.out
+				.println("Available actions: [a]dd judge  [r]emove judge  [n]ever mind");
+		while (true) {
+			System.out.print("> ");
+			String typed = console.readLine();
+			if (typed.equals("a")) {
+				addJudge();
+				break;
+			} else if (typed.equals("r")) {
+				removeJudge();
+				break;
+			} else if (typed.equals("n")) {
+				return;
+			}
+		}
+		System.out.println("There are now " + myTournament.getJudges().size()
+				+ " judges.");
+
+		if (myTournament.getTournamentState() == TournamentState.PRELIM
+				&& !myTournament.validateTournament()) {
+			System.out
+					.println("WARNING: There may not be enough judges. Tab could crash when you try to generate another round.");
+		}
+
+	}
+
+	private static void removeJudge() throws IOException {
+		System.out.println("Type the number for the judge you want to remove:");
+		for (int i = 0; i < myTournament.getJudges().size(); i++) {
+			System.out.println(i + ". " + myTournament.getJudges().get(i));
+		}
+		int index = getIntegerFromUser();
+		System.out.println("Removed judge: "
+				+ myTournament.getJudges().get(index));
+		myTournament.getJudges().remove(index);
+	}
+
+	private static void addJudge() throws IOException {
+		System.out.print("Judge full name\n> ");
+		String name = console.readLine();
+		System.out.print("Judge affiliation (press enter if none)\n> ");
+		String affiliation = console.readLine();
+
+		Judge j;
+		if (affiliation.length() != 0) {
+			// judge has school
+			School school = null;
+			if (myTournament.getSchools().containsKey(affiliation))
+				school = myTournament.getSchools().get(affiliation);
+			else {
+				school = new School(affiliation);
+				myTournament.getSchools().put(affiliation, school);
+			}
+
+			j = new Judge(school, name);
+		} else {
+			// just the judge
+			j = new Judge(NullSchool.getInstance(), name);
+		}
+		myTournament.getJudges().add(j);
+		System.out.println("Added judge: " + j);
 
 	}
 
@@ -381,8 +453,21 @@ public class Admin implements Serializable {
 		while (true) {
 			System.out
 					.println("For this round, how many judges will there be per pair?");
+			int numJudges = getIntegerFromUser();
 
-			rg.setCurrentNumJudges(getIntegerFromUser());
+			// Check if this number is OK
+
+			// Figure out how many debates are happening
+			int numDebates = (int) Math.pow(2,
+					myTournament.getNumEliminationRounds() - roundIndex) / 2;
+
+			if (numJudges * numDebates > myTournament.getJudges().size()) {
+				System.out.println("You don't have enough judges.");
+				myTournament.setTournamentState(TournamentState.PRELIM);
+				return;
+			}
+
+			rg.setCurrentNumJudges(numJudges);
 			break;
 		}
 
@@ -486,7 +571,7 @@ public class Admin implements Serializable {
 		System.out.println("Then press enter to begin import.");
 		System.out.print("> ");
 		console.readLine();
-		
+
 		// Do the actual importing
 		DataImport.parsePrelimRoundResults(fileName, myTournament
 				.getPreliminaryRounds().get(roundIndex));
