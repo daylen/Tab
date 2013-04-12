@@ -356,7 +356,7 @@ public class Admin implements Serializable {
 	}
 
 	private static void printHello() {
-		System.out.println("Tab");
+		System.out.println("Tab (Build " + internalVersionNumber + ")");
 		System.out.println("(c) 2013 Daylen Yang. All rights reserved.");
 
 		System.out.println();
