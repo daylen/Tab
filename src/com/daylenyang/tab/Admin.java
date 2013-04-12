@@ -207,6 +207,8 @@ public class Admin implements Serializable {
 		}
 		System.out.println("There are now " + myTournament.getJudges().size()
 				+ " judges.");
+		
+		saveTournament();
 
 		if (myTournament.getTournamentState() == TournamentState.PRELIM
 				&& !myTournament.validateTournament()) {
