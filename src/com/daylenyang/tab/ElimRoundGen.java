@@ -16,17 +16,15 @@ public class ElimRoundGen extends RoundGen {
 		currentPairingRule = tournament.getEliminationRoundPairingRule();
 	}
 
-	public void generateManyRoundsAndPickBestOne(List<Team> advancingTeams) {
+	/*public void generateManyRoundsAndPickBestOne(List<Team> advancingTeams) {
 		determineAdvancingTeams(advancingTeams);
 		super.generateManyRoundsAndPickBestOne(advancingTeams, new ArrayList<Pair>());
-	}
+	}*/
 
-	private void determineAdvancingTeams(List<Team> advancingTeams) {
+	public void determineAdvancingTeams(List<Team> advancingTeams, int numTeamsToBreak) {
 
 		if (advancingTeams.size() == 0) {
 			// This is the first elim round, need to determine breaks
-			int numTeamsToBreak = (int) Math.pow(2,
-					tournament.getNumEliminationRounds());
 			advancingTeams.addAll(getTopTeams(numTeamsToBreak));
 			System.out.println("Teams to advance:\n" + advancingTeams + "\n");
 		} else {

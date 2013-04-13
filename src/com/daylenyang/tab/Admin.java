@@ -436,7 +436,7 @@ public class Admin implements Serializable {
 
 		myTournament.setTournamentState(TournamentState.ELIM);
 
-		if (myTournament.getNumEliminationRounds() == 0) {
+		/*if (myTournament.getNumEliminationRounds() == 0) {
 			while (true) {
 				System.out.println("How many elim rounds will there be?");
 				System.out.println("1=Break to finals  2=Break to semis  "
@@ -445,14 +445,15 @@ public class Admin implements Serializable {
 				myTournament.setNumEliminationRounds(getIntegerFromUser());
 				break;
 			}
-		}
+		}*/
 
 		// Generate a round
 		ElimRoundGen rg = new ElimRoundGen(myTournament,
 				myTournament.getEliminationRounds());
-		int roundIndex = myTournament.getEliminationRounds().size();
+		rg.determineAdvancingTeams(myTournament.getAdvancingTeams(), 6);
+		//int roundIndex = myTournament.getEliminationRounds().size();
 
-		while (true) {
+		/*while (true) {
 			System.out
 					.println("For this round, how many judges will there be per pair?");
 			int numJudges = getIntegerFromUser();
@@ -471,10 +472,10 @@ public class Admin implements Serializable {
 
 			rg.setCurrentNumJudges(numJudges);
 			break;
-		}
+		}*/
 
-		rg.generateManyRoundsAndPickBestOne(myTournament.getAdvancingTeams());
-
+		// rg.generateManyRoundsAndPickBestOne(myTournament.getAdvancingTeams());
+/*
 		System.out.println("ELIM ROUND " + (roundIndex + 1));
 		prettyPrintARound(myTournament.getEliminationRounds().get(roundIndex));
 
@@ -504,7 +505,7 @@ public class Admin implements Serializable {
 		}
 
 		// Save the round
-		saveTournament();
+		saveTournament(); */
 	}
 
 	private static void runPrelimRound() throws IOException {
