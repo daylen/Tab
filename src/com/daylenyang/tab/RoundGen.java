@@ -43,7 +43,7 @@ public abstract class RoundGen implements Serializable {
 		public int compareTo(TeamPlusWeight arg0) {
 			return this.weight - arg0.weight;
 		}
-		
+
 		public String toString() {
 			return team + " (" + weight + ")";
 		}
@@ -78,8 +78,6 @@ public abstract class RoundGen implements Serializable {
 		judgeHasPreviouslyJudgedPenalty = 100 * tournament.getTeams().size();
 		judgeIsFromSameSchoolPenalty = 1000 * tournament.getTeams().size();
 	}
-	
-	
 
 	/**
 	 * Given a round filled with pairs, this method assigns judges and rooms to
@@ -217,8 +215,8 @@ public abstract class RoundGen implements Serializable {
 	 * @return The quality index number.
 	 */
 	protected int computeQualityIndexForPair(Team myTeam, Team candidateTeam) {
-		List<Team> previousOpponents = tournament
-				.getPreviousOpponentsForTeam(myTeam, rounds);
+		List<Team> previousOpponents = tournament.getPreviousOpponentsForTeam(
+				myTeam, rounds);
 
 		int weight = 0;
 
@@ -226,17 +224,18 @@ public abstract class RoundGen implements Serializable {
 		if (previousOpponents.contains(candidateTeam))
 			weight += teamsHavePreviouslyDebatedPenalty;
 		// Check whether this is a same school team
-		if (candidateTeam.getSchool().equals(myTeam.getSchool()))
+		if (tournament.getPreliminaryRounds().size() != 0
+				&& candidateTeam.getSchool().equals(myTeam.getSchool()))
 			weight += teamsAreFromSameSchoolPenalty;
 
 		// Apply pairing rule
-		
+
 		if (tournament.getPreliminaryRounds().size() == 0) {
 			int myRank = myTeam.getRanking();
 			int theirRank = candidateTeam.getRanking();
-			
+
 			int pairingRulePenalty = Math.abs(myRank - theirRank);
-			
+
 			switch (tournament.getFirstRoundPairingRule()) {
 			case POWER_MATCH:
 				weight += pairingRulePenalty;
@@ -246,7 +245,7 @@ public abstract class RoundGen implements Serializable {
 				break;
 			default:
 			}
-			
+
 		} else {
 			int myBallots = tournament.getBallotsForTeam(myTeam);
 			int theirBallots = tournament.getBallotsForTeam(candidateTeam);
@@ -334,7 +333,7 @@ public abstract class RoundGen implements Serializable {
 	 *            The round.
 	 */
 	protected void generateOneRound(List<Team> teams, Round r) {
-		
+
 		// Make a copy of teams
 		List<Team> teamsCopy = new ArrayList<Team>(teams);
 
@@ -365,9 +364,9 @@ public abstract class RoundGen implements Serializable {
 			teams.remove(opponent);
 
 			int numTimesWasAff = tournament.getAffHistoryForTeam(me, rounds);
-			int numTimesTheyWereAff = tournament.getAffHistoryForTeam(opponent, rounds);
+			int numTimesTheyWereAff = tournament.getAffHistoryForTeam(opponent,
+					rounds);
 
-			
 			if (numTimesWasAff == numTimesTheyWereAff) {
 				// coin flip
 				if (random.nextDouble() > 0.5) {
