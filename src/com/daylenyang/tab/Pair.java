@@ -55,11 +55,23 @@ public class Pair implements Serializable {
 	public void addJudge(Judge j) {
 		this.judges.add(j);
 	}
+	
+	public void clearJudges() {
+		judges.clear();
+	}
 
 	@Override
 	public String toString() {
 		return affTeam + " (" + affBallots + ")" + " (AFF) vs. " + negTeam + " ("
 				+ negBallots + ")" + " (NEG)";
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof Pair))
+			return false;
+		Pair p = (Pair) obj;
+		return (affTeam.equals(p.affTeam) && negTeam.equals(p.negTeam));
 	}
 
 }

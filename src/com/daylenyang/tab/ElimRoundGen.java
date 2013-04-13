@@ -18,7 +18,7 @@ public class ElimRoundGen extends RoundGen {
 
 	public void generateManyRoundsAndPickBestOne(List<Team> advancingTeams) {
 		determineAdvancingTeams(advancingTeams);
-		super.generateManyRoundsAndPickBestOne(advancingTeams);
+		super.generateManyRoundsAndPickBestOne(advancingTeams, new ArrayList<Pair>());
 	}
 
 	private void determineAdvancingTeams(List<Team> advancingTeams) {

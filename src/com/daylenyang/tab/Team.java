@@ -41,4 +41,13 @@ public class Team implements Serializable {
 		return ranking;
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof Team))
+			return false;
+		Team t = (Team) obj;
+		return (school.equals(t.school) && students[0].equals(t.students[0]) && students[1]
+				.equals(t.students[1]));
+	}
+
 }

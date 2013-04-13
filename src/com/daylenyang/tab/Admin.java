@@ -207,7 +207,7 @@ public class Admin implements Serializable {
 		}
 		System.out.println("There are now " + myTournament.getJudges().size()
 				+ " judges.");
-		
+
 		saveTournament();
 
 		if (myTournament.getTournamentState() == TournamentState.PRELIM
@@ -448,7 +448,7 @@ public class Admin implements Serializable {
 		}
 
 		// Generate a round
-		RoundGen rg = new ElimRoundGen(myTournament,
+		ElimRoundGen rg = new ElimRoundGen(myTournament,
 				myTournament.getEliminationRounds());
 		int roundIndex = myTournament.getEliminationRounds().size();
 
@@ -509,6 +509,35 @@ public class Admin implements Serializable {
 
 	private static void runPrelimRound() throws IOException {
 		myTournament.setTournamentState(TournamentState.PRELIM);
+		// make a copy of the array from the tournament so that we can modify it
+		// when manually pairing teams
+		List<Team> tmpTeams = new ArrayList<Team>(myTournament.getTeams());
+
+		boolean manuallyPairTeams;
+		while (true) {
+			System.out.println("Do you want to manually pair some teams?");
+			System.out.println("[y]es  [n]o");
+			System.out.print("> ");
+			String input = console.readLine();
+			if (input.length() == 0)
+				continue;
+
+			char firstChar = input.charAt(0);
+
+			if (firstChar == 'y') {
+				manuallyPairTeams = true;
+				break;
+			} else if (firstChar == 'n') {
+				manuallyPairTeams = false;
+				break;
+			}
+		}
+
+		List<Pair> manualPairs = new ArrayList<Pair>();
+		if (manuallyPairTeams) {
+			// start manually pairing teams
+			manualPairs = manuallyPairTeams();
+		}
 
 		// Generate a round
 
@@ -516,7 +545,7 @@ public class Admin implements Serializable {
 				myTournament.getPreliminaryRounds());
 		int roundIndex = myTournament.getPreliminaryRounds().size();
 
-		rg.generateManyRoundsAndPickBestOne(myTournament.getTeams());
+		rg.generateManyRoundsAndPickBestOne(myTournament.getTeams(), manualPairs);
 
 		System.out.println("ROUND " + (roundIndex + 1));
 		prettyPrintARound(myTournament.getPreliminaryRounds().get(roundIndex));
@@ -525,6 +554,64 @@ public class Admin implements Serializable {
 
 		// Save the round
 		saveTournament();
+	}
+
+	private static List<Pair> manuallyPairTeams() throws IOException {
+		List<Pair> manualPairs = new ArrayList<Pair>();
+		while (true) {
+			System.out.println("What is the AFF team in the pair?");
+
+			for (int i = 0; i < myTournament.getTeams().size(); i++) {
+				System.out.println(i + ". " + myTournament.getTeams().get(i));
+			}
+
+			int firstTeamIndex = getIntegerFromUser();
+			if (firstTeamIndex < 0
+					|| firstTeamIndex >= myTournament.getTeams().size()) {
+				System.out.println("Invalid team number.");
+				continue;
+			}
+
+			System.out.println("What is the NEG team in the pair?");
+
+			for (int i = 0; i < myTournament.getTeams().size(); i++) {
+				System.out.println(i + ". " + myTournament.getTeams().get(i));
+			}
+
+			int secondTeamIndex = getIntegerFromUser();
+			if (secondTeamIndex < 0
+					|| secondTeamIndex >= myTournament.getTeams().size()) {
+				System.out.println("Invalid team number.");
+				continue;
+			}
+
+			if (firstTeamIndex == secondTeamIndex) {
+				System.out.println("You cannot pick the same team both times.");
+				continue;
+			}
+
+			manualPairs.add(new Pair(myTournament.getTeams()
+					.get(firstTeamIndex), myTournament.getTeams().get(
+					secondTeamIndex)));
+
+			while (true) {
+				System.out.println("Do you want to manually pair more teams?");
+				System.out.println("[y]es  [n]o");
+				System.out.print("> ");
+				String input = console.readLine();
+				if (input.length() == 0)
+					continue;
+
+				char firstChar = input.charAt(0);
+
+				if (firstChar == 'y') {
+					break;
+				} else if (firstChar == 'n') {
+					return manualPairs;
+				}
+			}
+
+		}
 	}
 
 	private static int getIntegerFromUser() throws IOException {

@@ -3,9 +3,11 @@ package com.daylenyang.tab;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 public abstract class RoundGen implements Serializable {
 
@@ -86,37 +88,55 @@ public abstract class RoundGen implements Serializable {
 	 * @param r
 	 *            A round.
 	 */
-	protected void assignJudgesAndRooms(Round r) {
-		ArrayList<Judge> notPickedJudges = new ArrayList<Judge>(
-				tournament.getJudges());
-		ArrayList<Room> notPickedRooms = new ArrayList<Room>(
-				tournament.getRooms());
-
-		for (Pair pair : r.getPairs()) {
-			if (pair.getAffTeam() instanceof NullTeam
-					|| pair.getNegTeam() instanceof NullTeam) {
-				pair.addJudge(NullJudge.getInstance());
-				pair.setRoom(NullRoom.getInstance());
-				continue;
-			}
-
-			List<Judge> judgeWeights = sortJudgesByQualityIndex(pair,
-					notPickedJudges);
-
-			// Add judges to the pair
-			for (int i = 0; i < currentNumJudges; i++) {
-				Judge judgeToUse = judgeWeights.get(i);
-				notPickedJudges.remove(judgeToUse);
-				pair.addJudge(judgeWeights.get(i));
-			}
-
-			// Add room to the pair
-			pair.setRoom(notPickedRooms.get(0));
-			notPickedRooms.remove(0);
-
-		}
-
-	}
+	/*
+	 * protected void assignJudgesAndRooms(Round r) { ArrayList<Judge>
+	 * pickedJudges = new ArrayList<Judge>(); ArrayList<Judge> notPickedJudges =
+	 * new ArrayList<Judge>( tournament.getJudges()); Set<Judge> set1 = new
+	 * HashSet<Judge>(tournament.getJudges()); Set<Judge> set2 = new
+	 * HashSet<Judge>(); Set<Judge> picked = new HashSet<Judge>(); Set<Judge>
+	 * nPicked = new HashSet<Judge>();
+	 * 
+	 * ArrayList<Room> notPickedRooms = new ArrayList<Room>(
+	 * tournament.getRooms());
+	 * 
+	 * for (Pair pair : r.getPairs()) { set2.clear();
+	 * 
+	 * if (pair.getAffTeam() instanceof NullTeam || pair.getNegTeam() instanceof
+	 * NullTeam) { pair.addJudge(NullJudge.getInstance());
+	 * pair.setRoom(NullRoom.getInstance()); continue; }
+	 * 
+	 * List<Judge> judgeWeights = sortJudgesByQualityIndex(pair,
+	 * notPickedJudges);
+	 * 
+	 * int notPickedJudgesNum = notPickedJudges.size(); int pickedJudgesNum =
+	 * pickedJudges.size(); // Add judges to the pair for (int i = 0; i <
+	 * currentNumJudges; i++) { Judge judgeToUse = judgeWeights.get(i); if
+	 * (notPickedJudges.remove(judgeToUse)) {
+	 * 
+	 * } else { System.out.println("BIG PROBLEM: JUDGE NOT REMOVED"); }
+	 * pair.addJudge(judgeToUse); if (pickedJudges.contains(judgeToUse))
+	 * System.out.println("BIG PROBLEM: " + judgeToUse);
+	 * pickedJudges.add(judgeToUse); } if (pickedJudges.size() - pickedJudgesNum
+	 * != 2) System.out.println("yet another problem"); if (notPickedJudgesNum -
+	 * notPickedJudges.size() != 2)
+	 * System.out.println("this probably will never show up");
+	 * 
+	 * // Add room to the pair pair.setRoom(notPickedRooms.get(0));
+	 * notPickedRooms.remove(0);
+	 * 
+	 * picked.clear(); nPicked.clear();
+	 * 
+	 * picked.addAll(pickedJudges); nPicked.addAll(notPickedJudges);
+	 * 
+	 * picked.retainAll(nPicked); if (picked.size() != 0)
+	 * System.out.println("HUGEST PROB OF ALL");
+	 * 
+	 * // testing set2.addAll(pickedJudges); set2.addAll(notPickedJudges);
+	 * 
+	 * if (!set1.equals(set2)) System.out.println("ugh"); }
+	 * 
+	 * }
+	 */
 
 	/**
 	 * Given a pair and a list of judges, returns the list of judges sorted by
@@ -129,7 +149,7 @@ public abstract class RoundGen implements Serializable {
 	 * @return List of judges sorted by quality index.
 	 */
 	protected List<Judge> sortJudgesByQualityIndex(Pair pair,
-			List<Judge> notPickedJudges) {
+			Set<Judge> notPickedJudges) {
 		ArrayList<JudgePlusWeight> candidateWeights = new ArrayList<JudgePlusWeight>();
 
 		for (Judge j : notPickedJudges) {
@@ -295,7 +315,8 @@ public abstract class RoundGen implements Serializable {
 	 *            In preliminary rounds this is all the teams, but in
 	 *            elimination rounds it is just the teams that advance.
 	 */
-	public void generateManyRoundsAndPickBestOne(List<Team> teams) {
+	public void generateManyRoundsAndPickBestOne(List<Team> teams,
+			List<Pair> manualPairs) {
 
 		// Lower quality index is better.
 		int bestQualityIndex = Integer.MAX_VALUE;
@@ -305,12 +326,30 @@ public abstract class RoundGen implements Serializable {
 			// Create a round
 			Round r = new Round();
 
-			// Create a list and shuffle it
-			List<Team> teamsToProcess = new ArrayList<Team>(teams);
-			Collections.shuffle(teamsToProcess);
+			// Add the manual pairs to the round
+			for (Pair p : manualPairs) {
+				p.clearJudges();
+				r.addPair(p);
+			}
 
-			// Generate pairings, then calculate quality index
-			generateOneRound(teams, r);
+			// Create a list of teams to process
+			Set<Team> teamsToProcess = new HashSet<Team>(teams);
+
+			// Remove the manual pairs from the teams to process
+			for (Pair p : manualPairs) {
+				teamsToProcess.remove(p.getAffTeam());
+				teamsToProcess.remove(p.getNegTeam());
+			}
+			// Make that a list
+			List<Team> teamsToProcessList = new ArrayList<Team>(teamsToProcess);
+			Collections.shuffle(teamsToProcessList);
+
+			// Add the other pairs to the round
+			pairTeam(teamsToProcessList, r);
+			// Assign judges and rooms
+			assignJudgesAndRooms(r);
+
+			// Quality check
 			int currQualityIndex = computeQualityIndexForRound(r);
 
 			// Is the round better?
@@ -322,23 +361,40 @@ public abstract class RoundGen implements Serializable {
 		}
 		// Finally, add the round
 		rounds.add(bestRound);
+
+		for (Pair p : bestRound.getPairs()) {
+			System.out.println(p.getJudges());
+		}
+
 	}
 
-	/**
-	 * Generates one round.
-	 * 
-	 * @param teams
-	 *            The teams that will be in this round.
-	 * @param r
-	 *            The round.
-	 */
-	protected void generateOneRound(List<Team> teams, Round r) {
+	private void assignJudgesAndRooms(Round r) {
 
-		// Make a copy of teams
-		List<Team> teamsCopy = new ArrayList<Team>(teams);
+		Set<Judge> notPickedJudges = new HashSet<Judge>(tournament.getJudges());
+		List<Room> notPickedRooms = new ArrayList<Room>(tournament.getRooms());
 
-		pairTeam(teamsCopy, r);
-		assignJudgesAndRooms(r);
+		for (Pair pair : r.getPairs()) {
+			if (pair.getAffTeam() instanceof NullTeam
+					|| pair.getNegTeam() instanceof NullTeam) {
+				pair.addJudge(NullJudge.getInstance());
+				pair.setRoom(NullRoom.getInstance());
+				continue;
+			}
+
+			// Assign judges
+			List<Judge> bestJudgesForThisPair = sortJudgesByQualityIndex(pair,
+					notPickedJudges);
+
+			for (int i = 0; i < currentNumJudges; i++) {
+				pair.addJudge(bestJudgesForThisPair.get(i));
+				notPickedJudges.remove(bestJudgesForThisPair.get(i));
+			}
+
+			// Assign rooms
+			pair.setRoom(notPickedRooms.get(0));
+			notPickedRooms.remove(0);
+
+		}
 
 	}
 

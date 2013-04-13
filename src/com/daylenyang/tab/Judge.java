@@ -25,4 +25,12 @@ public class Judge implements Serializable {
 		return name;
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof Judge))
+			return false;
+		Judge j = (Judge) obj;
+		return name.equals(j.name);
+	}
+
 }

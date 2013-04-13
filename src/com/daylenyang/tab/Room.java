@@ -18,5 +18,13 @@ public class Room implements Serializable {
 	public String toString() {
 		return roomNumber;
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof Room))
+			return false;
+		Room r = (Room) obj;
+		return roomNumber.equals(r.roomNumber);
+	}
 
 }
