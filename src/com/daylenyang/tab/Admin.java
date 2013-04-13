@@ -512,7 +512,7 @@ public class Admin implements Serializable {
 		myTournament.setTournamentState(TournamentState.PRELIM);
 		// make a copy of the array from the tournament so that we can modify it
 		// when manually pairing teams
-		List<Team> tmpTeams = new ArrayList<Team>(myTournament.getTeams());
+		// List<Team> tmpTeams = new ArrayList<Team>(myTournament.getTeams());
 
 		boolean manuallyPairTeams;
 		while (true) {
