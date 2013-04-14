@@ -506,6 +506,8 @@ public class Admin implements Serializable {
 
 		// Save the round
 		saveTournament(); */
+		
+		myTournament.setTournamentState(TournamentState.ALL_DONE);
 	}
 
 	private static void runPrelimRound() throws IOException {
