@@ -15,7 +15,7 @@ import java.util.List;
 public class Admin implements Serializable {
 
 	private static final long serialVersionUID = 5378416302299271295L;
-	static final int internalVersionNumber = 5;
+	static final int internalVersionNumber = 6;
 	static String updateURL = "http://daylenyang.com/tab/ver.txt";
 
 	static Tournament myTournament;
@@ -317,8 +317,8 @@ public class Admin implements Serializable {
 
 	private static void prettyPrintARound(Round r) {
 		String[][] table = new String[r.getPairs().size() + 1][4];
-		table[0][0] = "AFF";
-		table[0][1] = "NEG";
+		table[0][0] = " ";
+		table[0][1] = " ";
 		table[0][2] = "JUDGES";
 		table[0][3] = "ROOM";
 
