@@ -34,7 +34,7 @@ public class Team implements Serializable {
 
 	@Override
 	public String toString() {
-		return getSchool() + " " + getInitials();
+		return students[0] + " & " + students[1];
 	}
 
 	public int getRanking() {
