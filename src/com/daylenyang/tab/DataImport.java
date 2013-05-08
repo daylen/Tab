@@ -19,7 +19,7 @@ public class DataImport implements Serializable {
 		// replace apostrophe
 		line = line.replace('Õ', '\'');
 		// split by comma
-		String[] csv = line.split(",");
+		String[] csv = line.split(",|\t");
 		// get rid of spaces
 		for (int i = 0; i < csv.length; i++) {
 			csv[i] = csv[i].trim();
