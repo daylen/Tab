@@ -15,7 +15,7 @@ import java.util.List;
 public class Admin implements Serializable {
 
 	private static final long serialVersionUID = 5378416302299271295L;
-	static final int internalVersionNumber = 9;
+	static final int internalVersionNumber = 10;
 	static String updateURL = "http://daylenyang.com/tab/ver.txt";
 
 	static Tournament myTournament;
@@ -353,7 +353,9 @@ public class Admin implements Serializable {
 
 			}
 		}
-
+		System.out.println("HTML code =========");
+		printHTMLTable(table);
+		System.out.println("Table =============");
 		printTable(table);
 	}
 
@@ -393,6 +395,20 @@ public class Admin implements Serializable {
 		}
 		System.out.println();
 
+	}
+	
+	private static void printHTMLTable(String[][] table) {
+		System.out.print("<table>");
+		for (int i = 0; i < table.length; i++) {
+			System.out.print("<tr>");
+			for (int j = 0; j < table[0].length; j++) {
+				System.out.print("<td>");
+				System.out.print(table[i][j]);
+				System.out.print("</td>");
+			}
+			System.out.print("</tr>");
+		}
+		System.out.println("</table>");
 	}
 
 	// http://stackoverflow.com/questions/275338/java-print-a-2d-string-array-as-a-right-justified-table
