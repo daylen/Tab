@@ -39,6 +39,8 @@ public class Tournament implements Serializable {
 	private List<Room> rooms;
 	private List<Round> preliminaryRounds;
 	private List<Round> eliminationRounds;
+	
+	private boolean displayJudges;
 
 	private Map<Student, List<Double>> speakerPoints;
 
@@ -322,6 +324,14 @@ public class Tournament implements Serializable {
 
 	public void setSchools(Map<String, School> schools) {
 		this.schools = schools;
+	}
+
+	public boolean isDisplayJudges() {
+		return displayJudges;
+	}
+
+	public void setDisplayJudges(boolean displayJudges) {
+		this.displayJudges = displayJudges;
 	}
 
 }

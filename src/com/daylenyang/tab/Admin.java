@@ -15,7 +15,7 @@ import java.util.List;
 public class Admin implements Serializable {
 
 	private static final long serialVersionUID = 5378416302299271295L;
-	static final int internalVersionNumber = 10;
+	static final int internalVersionNumber = 11;
 	static String updateURL = "http://daylenyang.com/tab/ver.txt";
 
 	static Tournament myTournament;
@@ -288,6 +288,7 @@ public class Admin implements Serializable {
 		myTournament.setFirstRoundPairingRule(PairingRule.POWER_PROTECT);
 		myTournament.setPreliminaryRoundPairingRule(PairingRule.POWER_MATCH);
 		myTournament.setEliminationRoundPairingRule(PairingRule.POWER_PROTECT);
+		myTournament.setDisplayJudges(false);
 
 		if (!myTournament.validateTournament()) {
 			System.err
@@ -343,7 +344,10 @@ public class Admin implements Serializable {
 					table[i][j] = sb.toString();
 					break;
 				case 2:
-					table[i][j] = p.getJudges().toString();
+					if (myTournament.isDisplayJudges())
+						table[i][j] = p.getJudges().toString();
+					else
+						table[i][j] = " ";
 					break;
 				case 3:
 					table[i][j] = p.getRoom().toString();
@@ -396,7 +400,7 @@ public class Admin implements Serializable {
 		System.out.println();
 
 	}
-	
+
 	private static void printHTMLTable(String[][] table) {
 		System.out.print("<table>");
 		for (int i = 0; i < table.length; i++) {
@@ -452,77 +456,62 @@ public class Admin implements Serializable {
 
 		myTournament.setTournamentState(TournamentState.ELIM);
 
-		/*if (myTournament.getNumEliminationRounds() == 0) {
-			while (true) {
-				System.out.println("How many elim rounds will there be?");
-				System.out.println("1=Break to finals  2=Break to semis  "
-						+ "3=Break to quarters  4=Break to octos");
-
-				myTournament.setNumEliminationRounds(getIntegerFromUser());
-				break;
-			}
-		}*/
+		/*
+		 * if (myTournament.getNumEliminationRounds() == 0) { while (true) {
+		 * System.out.println("How many elim rounds will there be?");
+		 * System.out.println("1=Break to finals  2=Break to semis  " +
+		 * "3=Break to quarters  4=Break to octos");
+		 * 
+		 * myTournament.setNumEliminationRounds(getIntegerFromUser()); break; }
+		 * }
+		 */
 
 		// Generate a round
 		ElimRoundGen rg = new ElimRoundGen(myTournament,
 				myTournament.getEliminationRounds());
 		rg.determineAdvancingTeams(myTournament.getAdvancingTeams(), 6);
-		//int roundIndex = myTournament.getEliminationRounds().size();
+		// int roundIndex = myTournament.getEliminationRounds().size();
 
-		/*while (true) {
-			System.out
-					.println("For this round, how many judges will there be per pair?");
-			int numJudges = getIntegerFromUser();
-
-			// Check if this number is OK
-
-			// Figure out how many debates are happening
-			int numDebates = (int) Math.pow(2,
-					myTournament.getNumEliminationRounds() - roundIndex) / 2;
-
-			if (numJudges * numDebates > myTournament.getJudges().size()) {
-				System.out.println("You don't have enough judges.");
-				myTournament.setTournamentState(TournamentState.PRELIM);
-				return;
-			}
-
-			rg.setCurrentNumJudges(numJudges);
-			break;
-		}*/
+		/*
+		 * while (true) { System.out
+		 * .println("For this round, how many judges will there be per pair?");
+		 * int numJudges = getIntegerFromUser();
+		 * 
+		 * // Check if this number is OK
+		 * 
+		 * // Figure out how many debates are happening int numDebates = (int)
+		 * Math.pow(2, myTournament.getNumEliminationRounds() - roundIndex) / 2;
+		 * 
+		 * if (numJudges * numDebates > myTournament.getJudges().size()) {
+		 * System.out.println("You don't have enough judges.");
+		 * myTournament.setTournamentState(TournamentState.PRELIM); return; }
+		 * 
+		 * rg.setCurrentNumJudges(numJudges); break; }
+		 */
 
 		// rg.generateManyRoundsAndPickBestOne(myTournament.getAdvancingTeams());
-/*
-		System.out.println("ELIM ROUND " + (roundIndex + 1));
-		prettyPrintARound(myTournament.getEliminationRounds().get(roundIndex));
+		/*
+		 * System.out.println("ELIM ROUND " + (roundIndex + 1));
+		 * prettyPrintARound
+		 * (myTournament.getEliminationRounds().get(roundIndex));
+		 * 
+		 * // Import data System.out.println("Result import for elim round " +
+		 * (roundIndex + 1)); for (Pair p :
+		 * myTournament.getEliminationRounds().get(roundIndex) .getPairs()) {
+		 * System.out.println("In " + p +
+		 * ", did the [l]eft team or [r]ight team win?"); while (true) {
+		 * System.out.print("> "); String typed = console.readLine(); if
+		 * (typed.equals("l")) { p.setBallots(1, 0); break; } else if
+		 * (typed.equals("r")) { p.setBallots(0, 1); break; } } }
+		 * 
+		 * // Is the tournament over? if (roundIndex + 1 ==
+		 * myTournament.getNumEliminationRounds()) {
+		 * System.out.println("The tournament is over.");
+		 * myTournament.setTournamentState(TournamentState.ALL_DONE); }
+		 * 
+		 * // Save the round saveTournament();
+		 */
 
-		// Import data
-		System.out.println("Result import for elim round " + (roundIndex + 1));
-		for (Pair p : myTournament.getEliminationRounds().get(roundIndex)
-				.getPairs()) {
-			System.out.println("In " + p
-					+ ", did the [l]eft team or [r]ight team win?");
-			while (true) {
-				System.out.print("> ");
-				String typed = console.readLine();
-				if (typed.equals("l")) {
-					p.setBallots(1, 0);
-					break;
-				} else if (typed.equals("r")) {
-					p.setBallots(0, 1);
-					break;
-				}
-			}
-		}
-
-		// Is the tournament over?
-		if (roundIndex + 1 == myTournament.getNumEliminationRounds()) {
-			System.out.println("The tournament is over.");
-			myTournament.setTournamentState(TournamentState.ALL_DONE);
-		}
-
-		// Save the round
-		saveTournament(); */
-		
 		myTournament.setTournamentState(TournamentState.ALL_DONE);
 	}
 
@@ -564,7 +553,8 @@ public class Admin implements Serializable {
 				myTournament.getPreliminaryRounds());
 		int roundIndex = myTournament.getPreliminaryRounds().size();
 
-		rg.generateManyRoundsAndPickBestOne(myTournament.getTeams(), manualPairs);
+		rg.generateManyRoundsAndPickBestOne(myTournament.getTeams(),
+				manualPairs);
 
 		System.out.println("ROUND " + (roundIndex + 1));
 		prettyPrintARound(myTournament.getPreliminaryRounds().get(roundIndex));
