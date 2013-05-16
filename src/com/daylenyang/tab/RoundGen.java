@@ -250,37 +250,19 @@ public abstract class RoundGen implements Serializable {
 
 		// Apply pairing rule
 
-		if (tournament.getPreliminaryRounds().size() == 0) {
-			int myRank = myTeam.getRanking();
-			int theirRank = candidateTeam.getRanking();
+		int myBallots = tournament.getBallotsForTeam(myTeam);
+		int theirBallots = tournament.getBallotsForTeam(candidateTeam);
 
-			int pairingRulePenalty = Math.abs(myRank - theirRank);
+		int pairingRulePenalty = Math.abs(myBallots - theirBallots);
 
-			switch (tournament.getFirstRoundPairingRule()) {
-			case POWER_MATCH:
-				weight += pairingRulePenalty;
-				break;
-			case POWER_PROTECT:
-				weight -= pairingRulePenalty;
-				break;
-			default:
-			}
-
-		} else {
-			int myBallots = tournament.getBallotsForTeam(myTeam);
-			int theirBallots = tournament.getBallotsForTeam(candidateTeam);
-
-			int pairingRulePenalty = Math.abs(myBallots - theirBallots);
-
-			switch (currentPairingRule) {
-			case POWER_MATCH:
-				weight += pairingRulePenalty;
-				break;
-			case POWER_PROTECT:
-				weight -= pairingRulePenalty;
-				break;
-			default:
-			}
+		switch (currentPairingRule) {
+		case POWER_MATCH:
+			weight += pairingRulePenalty;
+			break;
+		case POWER_PROTECT:
+			weight -= pairingRulePenalty;
+			break;
+		default:
 		}
 
 		return weight;
