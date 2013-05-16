@@ -48,9 +48,8 @@ public class DataImport implements Serializable {
 			Student s2 = new Student(csv[2]);
 			speakerPoints.put(s1, new ArrayList<Double>());
 			speakerPoints.put(s2, new ArrayList<Double>());
-			int ranking = (int) Double.parseDouble(csv[3]);
 
-			Team t = new Team(school, s1, s2, ranking);
+			Team t = new Team(school, s1, s2);
 
 			teams.add(t);
 
@@ -107,14 +106,15 @@ public class DataImport implements Serializable {
 		return rooms;
 	}
 
-	public static void parsePrelimRoundResults(String fileName, Round r)
+	public static void parsePrelimRoundResults(String fileName, Round r, int numJudges)
 			throws FileNotFoundException {
 		// Before we do anything, we know the result of the bye round
 		for (Pair p : r.getPairs()) {
 			if (p.getAffTeam() instanceof NullTeam) {
-				p.setBallots(0, 2);
+				// TODO Magic numbers
+				p.setBallots(0, numJudges);
 			} else if (p.getNegTeam() instanceof NullTeam) {
-				p.setBallots(2, 0);
+				p.setBallots(numJudges, 0);
 			}
 		}
 
