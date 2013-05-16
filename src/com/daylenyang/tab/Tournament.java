@@ -41,6 +41,7 @@ public class Tournament implements Serializable {
 	private List<Round> eliminationRounds;
 	
 	private boolean displayJudges;
+	private boolean useSpeakerPoints;
 
 	private Map<Student, List<Double>> speakerPoints;
 
@@ -271,6 +272,7 @@ public class Tournament implements Serializable {
 
 		if (teams.size() % 2 == 1) {
 			// add a null team
+			System.out.println("Odd number of teams. There will be byes.");
 			teams.add(NullTeam.getInstance());
 		}
 
@@ -288,11 +290,12 @@ public class Tournament implements Serializable {
 
 	public boolean validatePrelimRound(int roundIndex) {
 		// Check speaker points
-		for (Student s : speakerPoints.keySet()) {
-			// Check the size
-			if (speakerPoints.get(s).size() < roundIndex)
-				return false;
-		}
+		if (useSpeakerPoints)
+			for (Student s : speakerPoints.keySet()) {
+				// Check the size
+				if (speakerPoints.get(s).size() < roundIndex)
+					return false;
+			}
 		// Check for ballots in all pairs
 		for (Pair p : preliminaryRounds.get(roundIndex).getPairs()) {
 			// Check if more than zero ballots
@@ -332,6 +335,14 @@ public class Tournament implements Serializable {
 
 	public void setDisplayJudges(boolean displayJudges) {
 		this.displayJudges = displayJudges;
+	}
+
+	public boolean isUseSpeakerPoints() {
+		return useSpeakerPoints;
+	}
+
+	public void setUseSpeakerPoints(boolean useSpeakerPoints) {
+		this.useSpeakerPoints = useSpeakerPoints;
 	}
 
 }
