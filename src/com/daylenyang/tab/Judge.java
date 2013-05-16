@@ -30,6 +30,8 @@ public class Judge implements Serializable {
 		if (!(obj instanceof Judge))
 			return false;
 		Judge j = (Judge) obj;
+		if (name == null || j.name == null)
+			return false;
 		return name.equals(j.name);
 	}
 
