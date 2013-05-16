@@ -13,7 +13,7 @@ public class NullTeam extends Team {
 	}
 
 	private NullTeam() {
-		super(null, null, null, 0);
+		super(null, null, null);
 	}
 
 	@Override
@@ -36,5 +36,12 @@ public class NullTeam extends Team {
 	public String toString() {
 		return "Nobody";
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		return (obj instanceof NullTeam);
+
+	}
+
 
 }

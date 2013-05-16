@@ -20,5 +20,11 @@ public class NullStudent extends Student {
 	public String toString() {
 		return "";
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		return (obj instanceof NullStudent);
+
+	}
 
 }
