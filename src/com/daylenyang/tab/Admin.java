@@ -15,7 +15,7 @@ import java.util.List;
 public class Admin implements Serializable {
 
 	private static final long serialVersionUID = 5378416302299271295L;
-	static final int internalVersionNumber = 11;
+	static final int internalVersionNumber = 12;
 	static String updateURL = "http://daylenyang.com/tab/ver.txt";
 
 	static Tournament myTournament;
@@ -99,6 +99,9 @@ public class Admin implements Serializable {
 			case 'j':
 				return (myTournament.getTournamentState() == TournamentState.PRELIM || myTournament
 						.getTournamentState() == TournamentState.ELIM);
+			case 'r':
+				return (myTournament.getTournamentState() == TournamentState.PRELIM || myTournament
+						.getTournamentState() == TournamentState.ELIM);
 			case 'p':
 				return (myTournament.getTournamentState() == TournamentState.TOURNAMENT_LOADED || myTournament
 						.getTournamentState() == TournamentState.PRELIM);
@@ -126,8 +129,8 @@ public class Admin implements Serializable {
 
 		// Some more important stuff
 		String[] commands = { "new tournament", "open tournament",
-				"top speakers", "import data", "judges", "prelim", "elim",
-				"quit" };
+				"top speakers", "import data", "judges", "rooms", "prelim",
+				"elim", "quit" };
 
 		while (true) {
 			// Display available actions
@@ -171,6 +174,9 @@ public class Admin implements Serializable {
 			case 'j':
 				editJudges();
 				break;
+			case 'r':
+				editRooms();
+				break;
 			case 'p':
 				runPrelimRound();
 				break;
@@ -183,6 +189,37 @@ public class Admin implements Serializable {
 			default:
 				System.out.println("Unknown command.");
 			}
+		}
+
+	}
+
+	private static void editRooms() throws IOException {
+		System.out.println("There are currently "
+				+ myTournament.getRooms().size() + " rooms.");
+		System.out
+				.println("Available actions: [a]dd room  [r]emove room  [n]ever mind");
+		while (true) {
+			System.out.print("> ");
+			String typed = console.readLine();
+			if (typed.equals("a")) {
+				addRoom();
+				break;
+			} else if (typed.equals("r")) {
+				removeRoom();
+				break;
+			} else if (typed.equals("n")) {
+				return;
+			}
+		}
+		System.out.println("There are now " + myTournament.getRooms().size()
+				+ " rooms.");
+
+		saveTournament();
+
+		if (myTournament.getTournamentState() == TournamentState.PRELIM
+				&& !myTournament.validateTournament()) {
+			System.out
+					.println("WARNING: There may not be enough rooms. Tab could crash when you try to generate another round.");
 		}
 
 	}
@@ -216,6 +253,27 @@ public class Admin implements Serializable {
 					.println("WARNING: There may not be enough judges. Tab could crash when you try to generate another round.");
 		}
 
+	}
+
+	private static void addRoom() throws IOException {
+		System.out.print("Room number\n>");
+		String number = getIntegerFromUser() + "";
+
+		Room r = new Room(number);
+		myTournament.getRooms().add(r);
+		System.out.println("Added room: " + r);
+
+	}
+
+	private static void removeRoom() throws IOException {
+		System.out.println("Type the number for the room you want to remove:");
+		for (int i = 0; i < myTournament.getRooms().size(); i++) {
+			System.out.println(i + ". " + myTournament.getRooms().get(i));
+		}
+		int index = getIntegerFromUser();
+		System.out.println("Removed room: "
+				+ myTournament.getRooms().get(index));
+		myTournament.getRooms().remove(index);
 	}
 
 	private static void removeJudge() throws IOException {
@@ -284,11 +342,12 @@ public class Admin implements Serializable {
 		System.out.println("Rooms: " + myTournament.getRooms());
 		System.out.println();
 
-		myTournament.setPreliminaryRoundNumJudges(2);
+		myTournament.setPreliminaryRoundNumJudges(1);
 		myTournament.setFirstRoundPairingRule(PairingRule.POWER_PROTECT);
 		myTournament.setPreliminaryRoundPairingRule(PairingRule.POWER_MATCH);
 		myTournament.setEliminationRoundPairingRule(PairingRule.POWER_PROTECT);
-		myTournament.setDisplayJudges(false);
+		myTournament.setDisplayJudges(true);
+		myTournament.setUseSpeakerPoints(false);
 
 		if (!myTournament.validateTournament()) {
 			System.err
@@ -318,8 +377,8 @@ public class Admin implements Serializable {
 
 	private static void prettyPrintARound(Round r) {
 		String[][] table = new String[r.getPairs().size() + 1][4];
-		table[0][0] = " ";
-		table[0][1] = " ";
+		table[0][0] = "PROP/AFF";
+		table[0][1] = "OPP/NEG";
 		table[0][2] = "JUDGES";
 		table[0][3] = "ROOM";
 
@@ -412,7 +471,8 @@ public class Admin implements Serializable {
 			}
 			System.out.print("</tr>");
 		}
-		System.out.println("</table>");
+		System.out.println("</table><br><a href=\"http://daylenyang.com/tab/\">Powered by Tab</a>");
+		
 	}
 
 	// http://stackoverflow.com/questions/275338/java-print-a-2d-string-array-as-a-right-justified-table
@@ -469,6 +529,7 @@ public class Admin implements Serializable {
 		// Generate a round
 		ElimRoundGen rg = new ElimRoundGen(myTournament,
 				myTournament.getEliminationRounds());
+		// TODO magic number for number of advancing teams
 		rg.determineAdvancingTeams(myTournament.getAdvancingTeams(), 6);
 		// int roundIndex = myTournament.getEliminationRounds().size();
 
@@ -672,8 +733,10 @@ public class Admin implements Serializable {
 
 		// Do the actual importing
 		DataImport.parsePrelimRoundResults(fileName, myTournament
-				.getPreliminaryRounds().get(roundIndex));
-		DataImport.parseSpeakerPoints(sFileName, myTournament, roundIndex);
+				.getPreliminaryRounds().get(roundIndex), myTournament
+				.getPreliminaryRoundNumJudges());
+		if (myTournament.isUseSpeakerPoints())
+			DataImport.parseSpeakerPoints(sFileName, myTournament, roundIndex);
 
 		boolean proceed = true;
 		for (int i = 0; i < myTournament.getPreliminaryRounds().size(); i++) {
