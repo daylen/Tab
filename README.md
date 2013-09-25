@@ -6,6 +6,8 @@ It's the most advanced tab software on the planet.
 
 I hacked this together in a week for a debate tournament. It should probably be rewritten as a web app at some point.
 
+Any contributions to clean up the code and/or fix bugs would be appreciated.
+
 # Sarcastic Marketing Feature List
 
 ## Innovative user interface
